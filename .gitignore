@@ -36,5 +36,31 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-#Misc
+# Misc
 .cursorrules
+
+# Sentry Config File
+.env.sentry-build-plugin
+
+# Supabase
+.supabase
+
+# IDE / Editor
+.vscode
+.idea
+
+# Logs
+logs
+*.log
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Stripe
+.stripe
