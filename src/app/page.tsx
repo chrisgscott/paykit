@@ -1,15 +1,43 @@
-import { Sidebar } from './components/Layout/Sidebar'
-import { Header } from './components/Layout/Header'
+'use client'
+
+import { useState } from 'react'
+import Header from '@/components/Layout/Header'
+import Sidebar from '@/components/Layout/Sidebar'
+import Dashboard from '@/components/Dashboard/Dashboard'
+import CreatePayment from '@/components/CreatePayment/CreatePayment'
+import ManagePayments from '@/components/ManagePayments/ManagePayments'
+import Profile from '@/components/Profile/Profile'
+import Settings from '@/components/Settings/Settings'
 
 export default function Home() {
+  const [activeSection, setActiveSection] = useState('home')
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'home':
+        return <Dashboard />
+      case 'create-payment':
+        return <CreatePayment />
+      case 'manage-payments':
+        return <ManagePayments />
+      case 'profile':
+        return <Profile />
+      case 'settings':
+        return <Settings />
+      default:
+        return <div>Select a section from the sidebar</div>
+    }
+  }
+
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-200 p-6">
-          {/* Main content will go here */}
-          <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+    <div className="flex flex-col h-screen">
+      <Header />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} />
+        <main className="flex-1 overflow-y-auto p-6 bg-gray-50">
+          <div className="max-w-7xl mx-auto">
+            {renderContent()}
+          </div>
         </main>
       </div>
     </div>
