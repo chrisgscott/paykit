@@ -1,12 +1,15 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Outfit } from 'next/font/google'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const outfit = Outfit({ 
+  subsets: ['latin'],
+  variable: '--font-outfit',
+})
 
 export const metadata: Metadata = {
-  title: 'PayEase',
-  description: 'Manage your payments with ease',
+  title: 'PayKit',
+  description: 'Ridiculously Simple Payment Plans',
 }
 
 export default function RootLayout({
@@ -15,8 +18,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" className={outfit.variable}>
+      <body className="font-outfit">{children}</body>
     </html>
   )
 }

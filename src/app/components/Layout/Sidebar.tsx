@@ -15,7 +15,7 @@ export default function Sidebar({ activeSection, setActiveSection }: SidebarProp
   ]
 
   return (
-    <aside className="w-64 bg-gray-100 p-4 overflow-y-auto">
+    <aside className="w-64 bg-gray-50 p-4 overflow-y-auto">
       <nav className="space-y-2">
         {navItems.map((item) => (
           <a
@@ -23,8 +23,8 @@ export default function Sidebar({ activeSection, setActiveSection }: SidebarProp
             href="#"
             className={`flex items-center space-x-2 px-2 py-2 rounded-lg ${
               activeSection === item.section
-                ? 'bg-gray-200 text-gray-900'
-                : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+                ? 'bg-primary/10 text-primary'
+                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
             }`}
             onClick={() => setActiveSection(item.section)}
           >

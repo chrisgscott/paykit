@@ -6,7 +6,7 @@ export default function Settings() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Settings</CardTitle>
+        <CardTitle className="text-primary">Settings</CardTitle>
         <CardDescription>Manage your app preferences</CardDescription>
       </CardHeader>
       <CardContent>

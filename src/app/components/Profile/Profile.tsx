@@ -7,7 +7,7 @@ export default function Profile() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Your Profile</CardTitle>
+        <CardTitle className="text-primary">Your Profile</CardTitle>
         <CardDescription>Manage your account details</CardDescription>
       </CardHeader>
       <CardContent>
@@ -25,7 +25,7 @@ export default function Profile() {
         </form>
       </CardContent>
       <CardFooter>
-        <Button>Save Changes</Button>
+        <Button className="bg-primary hover:bg-primary/90">Save Changes</Button>
       </CardFooter>
     </Card>
   )
