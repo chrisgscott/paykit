@@ -1,11 +1,6 @@
 import type { Metadata } from 'next'
-import { Outfit } from 'next/font/google'
 import './globals.css'
-
-const outfit = Outfit({ 
-  subsets: ['latin'],
-  variable: '--font-outfit',
-})
+import AuthWrapper from '@/components/AuthWrapper'
 
 export const metadata: Metadata = {
   title: 'PayKit',
@@ -18,8 +13,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={outfit.variable}>
-      <body className="font-outfit">{children}</body>
+    <html lang="en">
+      <body>
+        <AuthWrapper>{children}</AuthWrapper>
+      </body>
     </html>
   )
 }

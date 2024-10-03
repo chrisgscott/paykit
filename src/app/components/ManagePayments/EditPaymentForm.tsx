@@ -4,13 +4,14 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/app/components/ui/textarea'
 import StripeCardForm from '@/components/StripeCardForm'
-import { PaymentPlan } from '@/types/payment'  // Import the shared type
+import { PaymentPlan } from '@/types/payment'
 
 interface EditPaymentFormProps {
-  plan: PaymentPlan;
-  onUpdate: (updatedPlan: PaymentPlan) => void;
-  onCancel: () => void;
+  plan: PaymentPlan
+  onUpdate: (updatedPlan: PaymentPlan) => Promise<void>
+  onCancel: () => void
 }
 
 export default function EditPaymentForm({ plan, onUpdate, onCancel }: EditPaymentFormProps) {
@@ -26,14 +27,14 @@ export default function EditPaymentForm({ plan, onUpdate, onCancel }: EditPaymen
       <div className="grid w-full items-center gap-4">
         <div className="flex flex-col space-y-1.5">
           <Label htmlFor="editPaymentType">Payment Type</Label>
-          <Select value={editedPlan.type} onValueChange={(value) => setEditedPlan({ ...editedPlan, type: value })}>
+          <Select value={editedPlan.payment_type} onValueChange={(value) => setEditedPlan({ ...editedPlan, payment_type: value as PaymentPlan['payment_type'] })}>
             <SelectTrigger id="editPaymentType">
               <SelectValue placeholder="Select payment type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="One-off Payment">One-off Payment</SelectItem>
-              <SelectItem value="Payment Plan">Payment Plan</SelectItem>
-              <SelectItem value="Ongoing Recurring">Ongoing Recurring</SelectItem>
+              <SelectItem value="one-off">One-off Payment</SelectItem>
+              <SelectItem value="installment">Payment Plan</SelectItem>
+              <SelectItem value="recurring">Ongoing Recurring</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -41,21 +42,30 @@ export default function EditPaymentForm({ plan, onUpdate, onCancel }: EditPaymen
           <Label htmlFor="editCustomerName">Customer Name</Label>
           <Input
             id="editCustomerName"
-            value={editedPlan.customerName}
-            onChange={(e) => setEditedPlan({ ...editedPlan, customerName: e.target.value })}
+            value={editedPlan.customers?.name || ''}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditedPlan({ ...editedPlan, customers: { ...editedPlan.customers, name: e.target.value } })}
+          />
+        </div>
+        <div className="flex flex-col space-y-1.5">
+          <Label htmlFor="editDescription">Description</Label>
+          <Textarea
+            id="editDescription"
+            value={editedPlan.description || ''}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEditedPlan({ ...editedPlan, description: e.target.value })}
           />
         </div>
         <div className="flex flex-col space-y-1.5">
           <Label htmlFor="editTotalAmount">
-            {editedPlan.type === 'Ongoing Recurring' ? 'Amount per Payment' : 'Total Amount'} ($)
+            {editedPlan.payment_type === 'recurring' ? 'Amount per Payment' : 'Total Amount'} ($)
           </Label>
           <Input
             id="editTotalAmount"
-            value={editedPlan.totalAmount}
-            onChange={(e) => setEditedPlan({ ...editedPlan, totalAmount: parseFloat(e.target.value) })}
+            value={editedPlan.total_amount?.toString() || ''}
+            onChange={(e) => setEditedPlan({ ...editedPlan, total_amount: parseFloat(e.target.value) })}
+            type="number"
           />
         </div>
-        {editedPlan.type === 'Payment Plan' && (
+        {editedPlan.payment_type === 'installment' && (
           <div className="flex flex-col space-y-1.5">
             <Label htmlFor="editInstallments">Number of Installments</Label>
             <Select 
@@ -75,10 +85,10 @@ export default function EditPaymentForm({ plan, onUpdate, onCancel }: EditPaymen
             </Select>
           </div>
         )}
-        {editedPlan.type !== 'One-off Payment' && (
+        {editedPlan.payment_type !== 'one-off' && (
           <div className="flex flex-col space-y-1.5">
             <Label htmlFor="editFrequency">Payment Frequency</Label>
-            <Select value={editedPlan.frequency} onValueChange={(value) => setEditedPlan({ ...editedPlan, frequency: value })}>
+            <Select value={editedPlan.frequency || ''} onValueChange={(value) => setEditedPlan({ ...editedPlan, frequency: value })}>
               <SelectTrigger id="editFrequency">
                 <SelectValue placeholder="Select frequency" />
               </SelectTrigger>
@@ -94,8 +104,8 @@ export default function EditPaymentForm({ plan, onUpdate, onCancel }: EditPaymen
         <div className="flex items-center space-x-2">
           <Switch
             id="editAutoCharge"
-            checked={editedPlan.autoCharge}
-            onCheckedChange={(checked) => setEditedPlan({ ...editedPlan, autoCharge: checked })}
+            checked={editedPlan.auto_charge || false}
+            onCheckedChange={(checked) => setEditedPlan({ ...editedPlan, auto_charge: checked })}
           />
           <Label htmlFor="editAutoCharge">Enable automatic charging</Label>
         </div>

@@ -1,6 +1,29 @@
 import {withSentryConfig} from '@sentry/nextjs';
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  // ... other configurations
+
+  async rewrites() {
+    return [
+      {
+        source: '/auth/v1/callback',
+        destination: '/auth/callback',
+      },
+      {
+        source: '/auth/v1/logout',
+        destination: '/api/auth/logout',
+      },
+      {
+        source: '/auth/v1/user',
+        destination: '/api/auth/user',
+      },
+      {
+        source: '/auth/v1/reset',
+        destination: '/api/auth/reset',
+      },
+    ]
+  },
+}
 
 export default withSentryConfig(nextConfig, {
 // For all available options, see:

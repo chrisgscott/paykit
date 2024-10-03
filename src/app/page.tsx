@@ -8,6 +8,7 @@ import CreatePayment from '@/components/CreatePayment/CreatePayment'
 import ManagePayments from '@/components/ManagePayments/ManagePayments'
 import Profile from '@/components/Profile/Profile'
 import Settings from '@/components/Settings/Settings'
+import { Client } from 'pg'
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState('home')

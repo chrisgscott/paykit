@@ -1,5 +1,7 @@
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card'
+'use client'
+
 import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 
 interface QuickActionsProps {
   setActiveSection: (section: string) => void
@@ -10,12 +12,12 @@ export default function QuickActions({ setActiveSection }: QuickActionsProps) {
     <Card>
       <CardHeader>
         <CardTitle>Quick Actions</CardTitle>
-        <CardDescription>Create new payments quickly</CardDescription>
+        <CardDescription>Common payment actions</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col space-y-2">
-        <Button onClick={() => setActiveSection('create-payment')}>Create One-Off Payment</Button>
-        <Button onClick={() => setActiveSection('create-payment')}>Create Payment Plan</Button>
-        <Button onClick={() => setActiveSection('create-payment')}>Create Recurring Payment</Button>
+      <CardContent className="grid gap-4">
+        <Button onClick={() => setActiveSection('create-payment')}>Create New Payment</Button>
+        <Button onClick={() => setActiveSection('manage-payments')}>Manage Payments</Button>
+        <Button onClick={() => setActiveSection('reports')}>View Reports</Button>
       </CardContent>
     </Card>
   )

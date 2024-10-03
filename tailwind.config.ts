@@ -74,6 +74,23 @@ const config: Config = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
+      fontSize: {
+        'xs': '0.75rem',
+        'sm': '0.875rem',
+        'base': '1rem',
+        'lg': '1.125rem',
+        'xl': '1.25rem',
+        '2xl': '1.5rem',
+        '3xl': '1.875rem',
+        '4xl': '2.25rem',
+        '5xl': '3rem',
+      },
+      fontWeight: {
+        normal: '200', // Lowered from default 400
+        medium: '400', // Lowered from default 500
+        semibold: '600', // Lowered from default 600
+        bold: '700', // Lowered from default 700
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],
