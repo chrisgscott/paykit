@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from 'react'
-import { supabase } from '@/utils/supabase'
-import { useAuth } from '@/contexts/AuthContext'
+'use client'
+
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { ChartTooltipContent } from "@/app/components/ui/charts"
+import { useQueryClient } from '@tanstack/react-query'
+import { createClient } from '@/utils/supabase/client'
+import { User } from '@supabase/supabase-js'
 
 // Define types for our dashboard data
 type DashboardStats = {
@@ -18,10 +22,15 @@ type ChartData = {
   scheduled: number
 }
 
-export default function Dashboard() {
-  const { user } = useAuth()
+interface DashboardProps {
+  user: User
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [chartData, setChartData] = useState<ChartData[]>([])
+  const queryClient = useQueryClient()
+  const supabase = createClient()
 
   useEffect(() => {
     if (user) {
@@ -29,11 +38,54 @@ export default function Dashboard() {
     }
   }, [user])
 
+  useEffect(() => {
+    const paymentPlansSubscription = supabase
+      .channel('payment_plans_changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'payment_plans',
+        }, 
+        (payload) => {
+          console.log('Payment plans change received!', payload)
+          queryClient.invalidateQueries({ queryKey: ['dashboardData'] })
+        }
+      )
+      .subscribe()
+
+    const transactionsSubscription = supabase
+      .channel('transactions_changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'transactions',
+        }, 
+        (payload) => {
+          console.log('Transactions change received!', payload)
+          queryClient.invalidateQueries({ queryKey: ['dashboardData'] })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      paymentPlansSubscription.unsubscribe()
+      transactionsSubscription.unsubscribe()
+    }
+  }, [queryClient])
+
   const fetchDashboardData = async () => {
+    if (!user) {
+      console.error('No active user')
+      return
+    }
+
     // Fetch total collected this month
     const { data: totalCollected, error: totalError } = await supabase
       .from('transactions')
       .select('amount')
+      .eq('user_id', user.id)
       .eq('status', 'successful')
       .gte('transaction_date', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
       .lt('transaction_date', new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toISOString())
@@ -66,14 +118,14 @@ export default function Dashboard() {
     const { data: chartData, error: chartError } = await supabase
       .from('transactions')
       .select('transaction_date, amount, status')
+      .eq('user_id', user.id)
       .gte('transaction_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
       .order('transaction_date', { ascending: true })
 
     if (chartError) {
       console.error('Error fetching chart data:', chartError)
-    } else if (chartData) {
-      const processedData = processChartData(chartData)
-      setChartData(processedData)
+    } else {
+      setChartData(processChartData(chartData))
     }
   }
 
@@ -154,3 +206,5 @@ export default function Dashboard() {
     </div>
   )
 }
+
+export default Dashboard

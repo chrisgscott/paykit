@@ -1,11 +1,10 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Database } from '@/types/database'
-import { PaymentPlan } from '@/types/payment'
+import { ExtendedPaymentPlan } from '@/types/payment'
 
 interface PaymentTableProps {
-  paymentPlans: PaymentPlan[]
-  onEdit: (plan: PaymentPlan) => void
+  paymentPlans: ExtendedPaymentPlan[]
+  onEdit: (plan: ExtendedPaymentPlan) => void
   onDelete: (id: string) => void
 }
 
@@ -26,7 +25,7 @@ export default function PaymentTable({ paymentPlans, onEdit, onDelete }: Payment
       <TableBody>
         {paymentPlans.map((plan) => (
           <TableRow key={plan.id}>
-            <TableCell>{plan.customers.name}</TableCell>
+            <TableCell>{plan.customers?.name || 'N/A'}</TableCell>
             <TableCell>{plan.payment_type}</TableCell>
             <TableCell>${plan.total_amount}</TableCell>
             <TableCell>{plan.installments || 'N/A'}</TableCell>

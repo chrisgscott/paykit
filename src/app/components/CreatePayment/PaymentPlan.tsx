@@ -12,7 +12,13 @@ interface PaymentPlanProps {
     frequency: string
     autoCharge: boolean
   }
-  setPaymentDetails: (details: any) => void
+  setPaymentDetails: React.Dispatch<React.SetStateAction<{
+    customerName: string
+    totalAmount: string
+    installments: string
+    frequency: string
+    autoCharge: boolean
+  }>>
 }
 
 export default function PaymentPlan({ paymentDetails, setPaymentDetails }: PaymentPlanProps) {

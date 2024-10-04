@@ -1,34 +1,71 @@
 'use client'
 
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { supabase } from '@/utils/supabase'
+import { createClient } from '@/utils/supabase/client'
 import { Database } from '@/types/database'
+import { ExtendedPaymentPlan } from '@/types/payment'
 
 type PaymentPlan = Database['public']['Tables']['payment_plans']['Row'] & {
   customers: { name: string | null }
 }
 
 async function fetchActivePayments(): Promise<PaymentPlan[]> {
+  const supabase = createClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) {
+    console.error('No active session')
+    return []
+  }
+  
   const { data, error } = await supabase
     .from('payment_plans')
     .select('*, customers(name)')
+    .eq('user_id', session.user.id)
     .eq('status', 'active')
   
-  if (error) throw error
-  return data
+  if (error) {
+    console.error('Error fetching active payments:', error)
+    return []
+  }
+  
+  return data || []
 }
 
 export default function ActivePayments() {
   const [filter, setFilter] = useState<string>('all')
+  const queryClient = useQueryClient()
+  const supabase = createClient()
 
   const { data: activePlans, isLoading, error } = useQuery({
     queryKey: ['activePayments'],
-    queryFn: fetchActivePayments,
+    queryFn: fetchActivePayments
   })
+
+  useEffect(() => {
+    const subscription = supabase
+      .channel('payment_plans_changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'payment_plans',
+          filter: `status=eq.active`
+        }, 
+        (payload) => {
+          console.log('Change received!', payload)
+          queryClient.invalidateQueries({ queryKey: ['activePayments'] })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [queryClient, supabase])
 
   if (isLoading) return <div>Loading active payments...</div>
   if (error) return <div>Error loading active payments</div>

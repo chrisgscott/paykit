@@ -141,6 +141,7 @@ export interface Database {
       transactions: {
         Row: {
           id: string
+          user_id: string  // Add this line
           payment_plan_id: string
           amount: number
           currency: string
@@ -154,6 +155,7 @@ export interface Database {
         }
         Insert: {
           id?: string
+          user_id: string  // Add this line
           payment_plan_id: string
           amount: number
           currency: string
@@ -167,6 +169,7 @@ export interface Database {
         }
         Update: {
           id?: string
+          user_id?: string  // Add this line
           payment_plan_id?: string
           amount?: number
           currency?: string
@@ -182,6 +185,7 @@ export interface Database {
       invoices: {
         Row: {
           id: string
+          user_id: string  // Add this line
           transaction_id: string
           customer_id: string
           amount_due: number
@@ -194,6 +198,7 @@ export interface Database {
         }
         Insert: {
           id?: string
+          user_id: string  // Add this line
           transaction_id: string
           customer_id: string
           amount_due: number
@@ -206,6 +211,7 @@ export interface Database {
         }
         Update: {
           id?: string
+          user_id?: string  // Add this line
           transaction_id?: string
           customer_id?: string
           amount_due?: number

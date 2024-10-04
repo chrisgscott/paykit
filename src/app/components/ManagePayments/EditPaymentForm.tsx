@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -7,10 +9,11 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/app/components/ui/textarea'
 import StripeCardForm from '@/components/StripeCardForm'
 import { PaymentPlan } from '@/types/payment'
+import { ExtendedPaymentPlan } from '@/types/payment'
 
 interface EditPaymentFormProps {
-  plan: PaymentPlan
-  onUpdate: (updatedPlan: PaymentPlan) => Promise<void>
+  plan: ExtendedPaymentPlan
+  onUpdate: (updatedPlan: ExtendedPaymentPlan) => Promise<void>
   onCancel: () => void
 }
 
@@ -42,8 +45,8 @@ export default function EditPaymentForm({ plan, onUpdate, onCancel }: EditPaymen
           <Label htmlFor="editCustomerName">Customer Name</Label>
           <Input
             id="editCustomerName"
-            value={editedPlan.customers?.name || ''}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditedPlan({ ...editedPlan, customers: { ...editedPlan.customers, name: e.target.value } })}
+            value={editedPlan.customerName || ''}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditedPlan({ ...editedPlan, customerName: e.target.value })}
           />
         </div>
         <div className="flex flex-col space-y-1.5">

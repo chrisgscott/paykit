@@ -1,11 +1,12 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Send } from 'lucide-react'
-import { supabase } from '@/utils/supabase'
+import { createClient } from '@/utils/supabase/client'
 import { Database } from '@/types/database'
 
 type PendingPayment = Database['public']['Tables']['payment_plans']['Row'] & {
@@ -13,20 +14,57 @@ type PendingPayment = Database['public']['Tables']['payment_plans']['Row'] & {
 }
 
 async function fetchPendingPayments(): Promise<PendingPayment[]> {
+  const supabase = createClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) {
+    console.error('No active session')
+    return []
+  }
+  
   const { data, error } = await supabase
     .from('payment_plans')
     .select('*, customers(name)')
+    .eq('user_id', session.user.id)
     .eq('status', 'pending')
   
-  if (error) throw error
-  return data
+  if (error) {
+    console.error('Error fetching pending payments:', error)
+    return []
+  }
+  
+  return data || []
 }
 
 export default function PendingPayments() {
+  const queryClient = useQueryClient()
+  const supabase = createClient()
+
   const { data: pendingPayments, isLoading, error } = useQuery({
     queryKey: ['pendingPayments'],
-    queryFn: fetchPendingPayments,
+    queryFn: fetchPendingPayments
   })
+
+  useEffect(() => {
+    const subscription = supabase
+      .channel('payment_plans_changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'payment_plans',
+          filter: `status=eq.pending`
+        }, 
+        (payload) => {
+          console.log('Change received!', payload)
+          queryClient.invalidateQueries({ queryKey: ['pendingPayments'] })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [queryClient, supabase])
 
   if (isLoading) return <div>Loading pending payments...</div>
   if (error) return <div>Error loading pending payments</div>
@@ -35,27 +73,27 @@ export default function PendingPayments() {
     <Card>
       <CardHeader>
         <CardTitle>Pending Payments</CardTitle>
-        <CardDescription>Customers with pending payment requests</CardDescription>
+        <CardDescription>Payments awaiting processing</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {pendingPayments?.map((plan) => (
-            <div key={plan.id} className="flex items-center">
-              <Avatar className="h-9 w-9">
-                <AvatarImage src={`/placeholder.svg?height=36&width=36`} alt={plan.customers.name || 'Unknown'} />
-                <AvatarFallback>{plan.customers.name ? plan.customers.name[0].toUpperCase() : 'U'}</AvatarFallback>
-              </Avatar>
-              <div className="ml-4 space-y-1">
-                <p className="text-sm font-medium leading-none">{plan.customers.name || 'Unknown Customer'}</p>
-                <p className="text-sm text-muted-foreground">Resend in 3 days</p>
+        {pendingPayments && pendingPayments.length > 0 ? (
+          <div className="space-y-4">
+            {pendingPayments.map((payment) => (
+              <div key={payment.id} className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">{payment.customers.name || 'Unknown Customer'}</p>
+                  <p className="text-sm text-muted-foreground">${payment.total_amount.toFixed(2)}</p>
+                </div>
+                <Button size="sm" variant="outline">
+                  <Send className="mr-2 h-4 w-4" />
+                  Send Reminder
+                </Button>
               </div>
-              <Button variant="outline" size="sm" className="ml-auto">
-                <Send className="h-4 w-4 mr-2" />
-                Resend
-              </Button>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div>No pending payments</div>
+        )}
       </CardContent>
     </Card>
   )

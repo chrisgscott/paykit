@@ -1,46 +1,43 @@
 'use client'
 
-import { useState } from 'react'
-import Header from '@/components/Layout/Header'
-import Sidebar from '@/components/Layout/Sidebar'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/utils/supabase/client'
 import Dashboard from '@/components/Dashboard/Dashboard'
-import CreatePayment from '@/components/CreatePayment/CreatePayment'
-import ManagePayments from '@/components/ManagePayments/ManagePayments'
-import Profile from '@/components/Profile/Profile'
-import Settings from '@/components/Settings/Settings'
-import { Client } from 'pg'
+import { User } from '@supabase/supabase-js'
 
 export default function Home() {
-  const [activeSection, setActiveSection] = useState('home')
+  const [user, setUser] = useState<User | null>(null)
+  const router = useRouter()
+  const supabase = createClient()
 
-  const renderContent = () => {
-    switch (activeSection) {
-      case 'home':
-        return <Dashboard />
-      case 'create-payment':
-        return <CreatePayment />
-      case 'manage-payments':
-        return <ManagePayments />
-      case 'profile':
-        return <Profile />
-      case 'settings':
-        return <Settings />
-      default:
-        return <div>Select a section from the sidebar</div>
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setUser(user)
+      } else {
+        router.push('/login')
+      }
     }
+
+    checkUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        setUser(session.user)
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null)
+        router.push('/login')
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [supabase, router])
+
+  if (!user) {
+    return <div>Loading...</div>
   }
 
-  return (
-    <div className="flex flex-col h-screen">
-      <Header />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} />
-        <main className="flex-1 overflow-y-auto p-6 bg-white">
-          <div className="max-w-7xl mx-auto">
-            {renderContent()}
-          </div>
-        </main>
-      </div>
-    </div>
-  )
+  return <Dashboard user={user} />
 }
