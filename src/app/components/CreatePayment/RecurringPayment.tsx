@@ -7,6 +7,7 @@ import StripeCardForm from '../StripeCardForm'
 interface RecurringPaymentProps {
   paymentDetails: {
     customerName: string
+    email: string
     totalAmount: string
     frequency: string
     autoCharge: boolean
@@ -25,6 +26,16 @@ export default function RecurringPayment({ paymentDetails, setPaymentDetails }: 
             placeholder="Enter customer name"
             value={paymentDetails.customerName}
             onChange={(e) => setPaymentDetails({ ...paymentDetails, customerName: e.target.value })}
+          />
+        </div>
+        <div className="flex flex-col space-y-1.5">
+        <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="Enter customer email"
+            value={paymentDetails.email}
+            onChange={(e) => setPaymentDetails({ ...paymentDetails, email: e.target.value })}
           />
         </div>
         <div className="flex flex-col space-y-1.5">

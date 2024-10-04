@@ -6,6 +6,7 @@ import StripeCardForm from '../StripeCardForm'
 interface OneOffPaymentProps {
   paymentDetails: {
     customerName: string
+    email: string
     totalAmount: string
     autoCharge: boolean
   }
@@ -26,6 +27,16 @@ export default function OneOffPayment({ paymentDetails, setPaymentDetails }: One
           />
         </div>
         <div className="flex flex-col space-y-1.5">
+        <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="Enter customer email"
+            value={paymentDetails.email}
+            onChange={(e) => setPaymentDetails({ ...paymentDetails, email: e.target.value })}
+          />
+        </div>
+        <div className="flex flex-col space-y-1.5">
           <Label htmlFor="totalAmount">Total Amount ($)</Label>
           <Input
             id="totalAmount"
@@ -33,14 +44,6 @@ export default function OneOffPayment({ paymentDetails, setPaymentDetails }: One
             value={paymentDetails.totalAmount}
             onChange={(e) => setPaymentDetails({ ...paymentDetails, totalAmount: e.target.value })}
           />
-        </div>
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="auto-charge"
-            checked={paymentDetails.autoCharge}
-            onCheckedChange={(checked) => setPaymentDetails({ ...paymentDetails, autoCharge: checked })}
-          />
-          <Label htmlFor="auto-charge">Enable automatic charging</Label>
         </div>
         <StripeCardForm />
       </div>

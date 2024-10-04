@@ -14,6 +14,7 @@ import { createClient } from '@/utils/supabase/client'
 
 interface PaymentDetails {
   customerName: string
+  email: string  // Add this line
   totalAmount: string
   installments: string
   frequency: string
@@ -24,6 +25,7 @@ export default function CreatePayment() {
   const [paymentType, setPaymentType] = useState('one-off')
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails>({
     customerName: '',
+    email: '',
     totalAmount: '',
     installments: '1',
     frequency: 'monthly',
@@ -40,27 +42,131 @@ export default function CreatePayment() {
         throw new Error('No active session')
       }
 
+      // Create or update the customer
+      const { data: customerData, error: customerError } = await supabase
+        .from('customers')
+        .upsert(
+          { 
+            user_id: session.user.id,
+            name: details.customerName, 
+            email: details.email 
+          },
+          { onConflict: 'user_id, email' }
+        )
+        .select()
+      if (customerError) throw customerError
+
+      // Create the payment plan
       const { data, error } = await supabase
         .from('payment_plans')
         .insert([
           {
             user_id: session.user.id,
-            customer_name: details.customerName,
+            customer_id: customerData[0].id,
+            name: `${details.customerName}'s ${paymentType} Payment`,
             payment_type: paymentType,
             total_amount: parseFloat(details.totalAmount),
-            installments: parseInt(details.installments),
-            frequency: details.frequency,
+            currency: 'USD',
+            installments: paymentType === 'installment' ? parseInt(details.installments) : null,
+            frequency: paymentType === 'one-off' ? null : details.frequency,
+            start_date: new Date().toISOString(),
+            end_date: paymentType === 'recurring' ? null : new Date().toISOString(),
+            next_transaction_date: new Date().toISOString(),
             auto_charge: details.autoCharge,
-            status: 'pending'
+            status: 'active'
           }
         ])
+        .select()
       if (error) throw error
+
+      // Create transactions based on payment type
+      if (paymentType === 'one-off') {
+        await createOneOffTransaction(session.user.id, data[0].id, details)
+      } else if (paymentType === 'installment') {
+        await createInstallmentTransactions(session.user.id, data[0].id, details)
+      } else if (paymentType === 'recurring') {
+        await createRecurringTransactions(session.user.id, data[0].id, details)
+      }
+
       return data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['paymentPlans'] })
     }
   })
+
+  const createOneOffTransaction = async (userId: string, planId: string, details: PaymentDetails) => {
+    const { error } = await supabase
+      .from('transactions')
+      .insert([
+        {
+          user_id: userId,
+          payment_plan_id: planId,
+          amount: parseFloat(details.totalAmount),
+          currency: 'USD',
+          status: 'completed',
+          transaction_date: new Date().toISOString()
+        }
+      ])
+    if (error) throw error
+  }
+
+  const createInstallmentTransactions = async (userId: string, planId: string, details: PaymentDetails) => {
+    const installments = parseInt(details.installments)
+    const amount = parseFloat(details.totalAmount) / installments
+    const transactions = []
+
+    for (let i = 0; i < installments; i++) {
+      const date = new Date()
+      date.setMonth(date.getMonth() + i)
+      transactions.push({
+        user_id: userId,
+        payment_plan_id: planId,
+        amount: amount,
+        currency: 'USD',
+        status: 'pending',
+        transaction_date: date.toISOString()
+      })
+    }
+
+    const { error } = await supabase
+      .from('transactions')
+      .insert(transactions)
+    if (error) throw error
+  }
+
+  const createRecurringTransactions = async (userId: string, planId: string, details: PaymentDetails) => {
+    const amount = parseFloat(details.totalAmount)
+    const transactions = []
+    const date = new Date()
+
+    // Create transactions for the next 3 months
+    for (let i = 0; i < 3; i++) {
+      if (details.frequency === 'weekly') {
+        date.setDate(date.getDate() + 7 * (i + 1))
+      } else if (details.frequency === 'biweekly') {
+        date.setDate(date.getDate() + 14 * (i + 1))
+      } else if (details.frequency === 'monthly') {
+        date.setMonth(date.getMonth() + 1)
+      } else if (details.frequency === 'quarterly') {
+        date.setMonth(date.getMonth() + 3)
+      }
+
+      transactions.push({
+        user_id: userId,
+        payment_plan_id: planId,
+        amount: amount,
+        currency: 'USD',
+        status: 'pending',
+        transaction_date: date.toISOString()
+      })
+    }
+
+    const { error } = await supabase
+      .from('transactions')
+      .insert(transactions)
+    if (error) throw error
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -90,17 +196,17 @@ export default function CreatePayment() {
 
   return (
     <StripeWrapper>
-      <Card className="w-full max-w-2xl mx-auto">
+      <Card className="w-full">
         <CardHeader>
-          <CardTitle>Create New Payment</CardTitle>
+          <CardTitle>Create Payment</CardTitle>
           <CardDescription>Set up a new payment for your customer</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs value={paymentType} onValueChange={setPaymentType}>
+          <Tabs defaultValue="one-off" onValueChange={(value) => setPaymentType(value)}>
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="one-off">One-off Payment</TabsTrigger>
+              <TabsTrigger value="one-off">One-off</TabsTrigger>
               <TabsTrigger value="installment">Payment Plan</TabsTrigger>
-              <TabsTrigger value="recurring">Ongoing Recurring</TabsTrigger>
+              <TabsTrigger value="recurring">Recurring</TabsTrigger>
             </TabsList>
             <TabsContent value="one-off">
               <OneOffPayment paymentDetails={paymentDetails} setPaymentDetails={setPaymentDetails} />
@@ -113,9 +219,8 @@ export default function CreatePayment() {
             </TabsContent>
           </Tabs>
         </CardContent>
-        <CardFooter className="flex flex-col items-start space-y-4">
+        <CardFooter>
           <PaymentSummary paymentType={paymentType} paymentDetails={paymentDetails} />
-          <Button className="w-full" onClick={handleSubmit}>Create Payment</Button>
         </CardFooter>
       </Card>
     </StripeWrapper>
