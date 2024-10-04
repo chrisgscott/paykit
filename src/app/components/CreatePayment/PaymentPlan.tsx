@@ -12,6 +12,8 @@ interface PaymentPlanProps {
     installments: string
     frequency: string
     autoCharge: boolean
+    startDate: string
+    downPayment: string
   }
   setPaymentDetails: React.Dispatch<React.SetStateAction<{
     customerName: string
@@ -20,6 +22,8 @@ interface PaymentPlanProps {
     installments: string
     frequency: string
     autoCharge: boolean
+    startDate: string
+    downPayment: string
   }>>
 }
 
@@ -97,6 +101,24 @@ export default function PaymentPlan({ paymentDetails, setPaymentDetails }: Payme
             onCheckedChange={(checked) => setPaymentDetails({ ...paymentDetails, autoCharge: checked })}
           />
           <Label htmlFor="auto-charge">Enable automatic charging</Label>
+        </div>
+        <div className="flex flex-col space-y-1.5">
+          <Label htmlFor="startDate">Start Date</Label>
+          <Input
+            id="startDate"
+            type="date"
+            value={paymentDetails.startDate}
+            onChange={(e) => setPaymentDetails({ ...paymentDetails, startDate: e.target.value })}
+          />
+        </div>
+        <div className="flex flex-col space-y-1.5">
+          <Label htmlFor="downPayment">Down Payment ($)</Label>
+          <Input
+            id="downPayment"
+            placeholder="Enter down payment amount"
+            value={paymentDetails.downPayment}
+            onChange={(e) => setPaymentDetails({ ...paymentDetails, downPayment: e.target.value })}
+          />
         </div>
         <StripeCardForm />
       </div>

@@ -11,8 +11,16 @@ interface RecurringPaymentProps {
     totalAmount: string
     frequency: string
     autoCharge: boolean
+    startDate: string
   }
-  setPaymentDetails: (details: any) => void
+  setPaymentDetails: React.Dispatch<React.SetStateAction<{
+    customerName: string
+    email: string
+    totalAmount: string
+    frequency: string
+    autoCharge: boolean
+    startDate: string
+  }>>
 }
 
 export default function RecurringPayment({ paymentDetails, setPaymentDetails }: RecurringPaymentProps) {
@@ -71,6 +79,15 @@ export default function RecurringPayment({ paymentDetails, setPaymentDetails }: 
             onCheckedChange={(checked) => setPaymentDetails({ ...paymentDetails, autoCharge: checked })}
           />
           <Label htmlFor="auto-charge">Enable automatic charging</Label>
+        </div>
+        <div className="flex flex-col space-y-1.5">
+          <Label htmlFor="startDate">Start Date</Label>
+          <Input
+            id="startDate"
+            type="date"
+            value={paymentDetails.startDate}
+            onChange={(e) => setPaymentDetails({ ...paymentDetails, startDate: e.target.value })}
+          />
         </div>
         <StripeCardForm />
       </div>

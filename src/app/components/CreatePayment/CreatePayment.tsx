@@ -19,6 +19,8 @@ interface PaymentDetails {
   installments: string
   frequency: string
   autoCharge: boolean
+  startDate: string
+  downPayment: string
 }
 
 export default function CreatePayment() {
@@ -29,7 +31,9 @@ export default function CreatePayment() {
     totalAmount: '',
     installments: '1',
     frequency: 'monthly',
-    autoCharge: true
+    autoCharge: true,
+    startDate: new Date().toISOString().split('T')[0], // Set default to current date
+    downPayment: '0'
   })
 
   const queryClient = useQueryClient()

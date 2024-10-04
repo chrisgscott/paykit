@@ -9,16 +9,24 @@ export function generatePaymentSchedule(
   totalAmount: number,
   numberOfInstallments: number,
   frequency: string,
-  startDate: Date = new Date()
+  startDate: Date = new Date(),
+  downPayment: number = 0
 ): PaymentScheduleItem[] {
   if (isNaN(totalAmount) || isNaN(numberOfInstallments) || numberOfInstallments === 0) {
     return []
   }
 
   const schedule: PaymentScheduleItem[] = []
-  const regularInstallmentAmount = parseFloat((totalAmount / numberOfInstallments).toFixed(2))
-  let remainingAmount = totalAmount
+  const regularInstallmentAmount = parseFloat(((totalAmount - downPayment) / numberOfInstallments).toFixed(2))
+  let remainingAmount = totalAmount - downPayment
   let currentDate = startDate
+
+  if (downPayment > 0) {
+    schedule.push({
+      date: format(currentDate, 'yyyy-MM-dd'),
+      amount: downPayment.toFixed(2)
+    })
+  }
 
   for (let i = 0; i < numberOfInstallments; i++) {
     let installmentAmount = i === numberOfInstallments - 1 ? remainingAmount : regularInstallmentAmount

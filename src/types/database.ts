@@ -94,6 +94,7 @@ export interface Database {
           stripe_product_id: string | null
           created_at: string
           updated_at: string
+          downPayment: number | null
         }
         Insert: {
           id?: string
@@ -115,6 +116,7 @@ export interface Database {
           stripe_product_id?: string | null
           created_at?: string
           updated_at?: string
+          downPayment?: number | null
         }
         Update: {
           id?: string
@@ -136,6 +138,7 @@ export interface Database {
           stripe_product_id?: string | null
           created_at?: string
           updated_at?: string
+          downPayment?: number | null
         }
       }
       transactions: {
@@ -152,6 +155,7 @@ export interface Database {
           installment_number: number | null
           created_at: string
           updated_at: string
+          is_downPayment: boolean
         }
         Insert: {
           id?: string
@@ -166,6 +170,7 @@ export interface Database {
           installment_number?: number | null
           created_at?: string
           updated_at?: string
+          is_downPayment?: boolean
         }
         Update: {
           id?: string
@@ -180,6 +185,7 @@ export interface Database {
           installment_number?: number | null
           created_at?: string
           updated_at?: string
+          is_downPayment?: boolean
         }
       }
       invoices: {
