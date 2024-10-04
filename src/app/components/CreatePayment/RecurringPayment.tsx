@@ -3,24 +3,11 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import StripeCardForm from '../StripeCardForm'
+import { PaymentDetails } from './CreatePayment';
 
 interface RecurringPaymentProps {
-  paymentDetails: {
-    customerName: string
-    email: string
-    totalAmount: string
-    frequency: string
-    autoCharge: boolean
-    startDate: string
-  }
-  setPaymentDetails: React.Dispatch<React.SetStateAction<{
-    customerName: string
-    email: string
-    totalAmount: string
-    frequency: string
-    autoCharge: boolean
-    startDate: string
-  }>>
+  paymentDetails: PaymentDetails;
+  setPaymentDetails: React.Dispatch<React.SetStateAction<PaymentDetails>>;
 }
 
 export default function RecurringPayment({ paymentDetails, setPaymentDetails }: RecurringPaymentProps) {

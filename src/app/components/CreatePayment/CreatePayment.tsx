@@ -12,9 +12,9 @@ import { StripeWrapper } from '@/lib/stripe'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 
-interface PaymentDetails {
+export interface PaymentDetails {
   customerName: string
-  email: string  // Add this line
+  email: string
   totalAmount: string
   installments: string
   frequency: string
