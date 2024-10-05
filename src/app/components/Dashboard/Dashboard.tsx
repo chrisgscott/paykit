@@ -1,10 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { ChartTooltipContent } from "@/app/components/ui/charts"
 import { useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/utils/supabase/client'
 import { User } from '@supabase/supabase-js'
@@ -32,50 +30,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   const queryClient = useQueryClient()
   const supabase = createClient()
 
-  useEffect(() => {
-    if (user) {
-      fetchDashboardData()
-    }
-  }, [user])
-
-  useEffect(() => {
-    const paymentPlansSubscription = supabase
-      .channel('payment_plans_changes')
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'payment_plans',
-        }, 
-        (payload) => {
-          console.log('Payment plans change received!', payload)
-          queryClient.invalidateQueries({ queryKey: ['dashboardData'] })
-        }
-      )
-      .subscribe()
-
-    const transactionsSubscription = supabase
-      .channel('transactions_changes')
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'transactions',
-        }, 
-        (payload) => {
-          console.log('Transactions change received!', payload)
-          queryClient.invalidateQueries({ queryKey: ['dashboardData'] })
-        }
-      )
-      .subscribe()
-
-    return () => {
-      paymentPlansSubscription.unsubscribe()
-      transactionsSubscription.unsubscribe()
-    }
-  }, [queryClient])
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     if (!user) {
       console.error('No active user')
       return
@@ -127,7 +82,48 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     } else {
       setChartData(processChartData(chartData))
     }
-  }
+  }, [supabase])
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [fetchDashboardData])
+
+  useEffect(() => {
+    const paymentPlansSubscription = supabase
+      .channel('payment_plans_changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'payment_plans',
+        }, 
+        (payload) => {
+          console.log('Payment plans change received!', payload)
+          queryClient.invalidateQueries({ queryKey: ['dashboardData'] })
+        }
+      )
+      .subscribe()
+
+    const transactionsSubscription = supabase
+      .channel('transactions_changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'transactions',
+        }, 
+        (payload) => {
+          console.log('Transactions change received!', payload)
+          queryClient.invalidateQueries({ queryKey: ['dashboardData'] })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      paymentPlansSubscription.unsubscribe()
+      transactionsSubscription.unsubscribe()
+    }
+  }, [queryClient, supabase])
 
   const processChartData = (data: any[]): ChartData[] => {
     // Process the raw data into the format expected by the chart component

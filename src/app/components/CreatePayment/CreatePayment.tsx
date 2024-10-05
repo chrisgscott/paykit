@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Button } from '@/components/ui/button'
 import OneOffPayment from './OneOffPayment'
 import PaymentPlan from './PaymentPlan'
 import RecurringPayment from './RecurringPayment'
@@ -172,10 +171,6 @@ export default function CreatePayment() {
     if (error) throw error
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    createPaymentMutation.mutate(paymentDetails)
-  }
 
   useEffect(() => {
     const subscription = supabase

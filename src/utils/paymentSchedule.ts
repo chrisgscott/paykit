@@ -29,7 +29,7 @@ export function generatePaymentSchedule(
   }
 
   for (let i = 0; i < numberOfInstallments; i++) {
-    let installmentAmount = i === numberOfInstallments - 1 ? remainingAmount : regularInstallmentAmount
+    const installmentAmount = i === numberOfInstallments - 1 ? remainingAmount : regularInstallmentAmount
 
     schedule.push({
       date: format(currentDate, 'yyyy-MM-dd'),

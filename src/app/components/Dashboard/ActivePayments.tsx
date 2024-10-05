@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createClient } from '@/utils/supabase/client'
 import { Database } from '@/types/database'
-import { ExtendedPaymentPlan } from '@/types/payment'
 
 type PaymentPlan = Database['public']['Tables']['payment_plans']['Row'] & {
   customers: { name: string | null }

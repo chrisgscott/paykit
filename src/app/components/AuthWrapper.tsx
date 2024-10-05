@@ -23,7 +23,7 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
 
     checkUser()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
         if (pathname === '/login' || pathname === '/signup') {
           router.push('/')

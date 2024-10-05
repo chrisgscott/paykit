@@ -138,7 +138,7 @@ export default function ManagePayments() {
     return () => {
       subscription.unsubscribe()
     }
-  }, [queryClient])
+  }, [queryClient, supabase])
 
   if (isLoading) return <div>Loading payment plans...</div>
   if (error) {

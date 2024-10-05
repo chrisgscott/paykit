@@ -5,9 +5,11 @@ module.exports = {
       'plugin:@typescript-eslint/recommended',
       'plugin:react/recommended',
       'plugin:react-hooks/recommended',
-      'prettier'
+      'prettier',
+      'plugin:react/jsx-runtime'
     ],
     rules: {
       // Add any custom rules here
+      'react/prop-types': 'off'
     }
   };

@@ -63,7 +63,7 @@ export async function handleAuthCallback(request: NextRequest) {
   const next = requestUrl.searchParams.get('next') ?? '/'
 
   if (code) {
-    const { supabase, response } = createClient(request)
+    const { supabase } = createClient(request)
     try {
       const { error } = await supabase.auth.exchangeCodeForSession(code)
       if (!error) {
